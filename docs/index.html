@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="refresh" content="300">
+<title>Personal Brand OS — Live Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #f0f0f0; }
+.header { background: #16213e; padding: 32px 40px; border-bottom: 2px solid #7c3aed; display: flex; justify-content: space-between; align-items: center; }
+.header-left h1 { color: #a78bfa; font-size: 1.6rem; margin-bottom: 4px; }
+.header-left p { color: #888; font-size: 0.8rem; }
+.live-badge { background: #7c3aed; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; display: inline-block; margin-bottom: 4px; }
+.last-update { color: #555; font-size: 0.75rem; text-align: right; }
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.stat-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; text-align: center; }
+.stat-value { font-size: 2rem; font-weight: bold; color: #a78bfa; }
+.stat-label { font-size: 0.72rem; color: #888; margin-top: 4px; }
+.section { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.section-title { color: #a78bfa; font-size: 1rem; font-weight: bold; margin-bottom: 16px; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.section-title span { color: #555; font-size: 0.75rem; font-weight: normal; }
+.post-card { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+.post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.post-theme { font-weight: bold; font-size: 0.95rem; color: #f0f0f0; flex: 1; margin-right: 12px; }
+.post-score { background: #2a1a4a; color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
+.post-pillar { background: #1a2a1a; color: #86efac; padding: 3px 10px; border-radius: 10px; font-size: 0.7rem; border: 1px solid #3B6D11; margin-bottom: 8px; display: inline-block; }
+.post-tweet { background: #0a0a1a; border-left: 3px solid #7c3aed; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 0.85rem; color: #ccc; line-height: 1.5; margin-bottom: 8px; }
+.post-date { color: #555; font-size: 0.72rem; }
+.post-image { width: 100%; max-width: 300px; border-radius: 8px; margin-top: 10px; }
+.score-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.bar-bg { background: #2a2a2a; border-radius: 4px; height: 6px; flex: 1; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; background: #7c3aed; }
+.report-card { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 18px; margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.report-left { border-right: 1px solid #2a2a2a; padding-right: 16px; }
+.report-grade { font-size: 3rem; font-weight: bold; color: #a78bfa; }
+.report-meta { font-size: 0.8rem; color: #888; margin-top: 4px; }
+.report-insight { font-size: 0.85rem; color: #ccc; line-height: 1.5; }
+.report-focus { background: #1a0a2a; border: 1px solid #7c3aed; border-radius: 6px; padding: 10px; font-size: 0.8rem; color: #c4b5fd; margin-top: 10px; }
+.momentum { padding: 3px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: bold; display: inline-block; margin-top: 6px; }
+.RISING { background: #0f2a1a; color: #86efac; border: 1px solid #3B6D11; }
+.STABLE { background: #1a1a0a; color: #FAC775; border: 1px solid #BA7517; }
+.DECLINING { background: #2a0a0a; color: #fca5a5; border: 1px solid #A32D2D; }
+.empty { text-align: center; padding: 40px; color: #555; font-size: 0.9rem; }
+.platform-tag { background: #2a2a2a; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; color: #888; margin-right: 4px; }
+footer { text-align: center; padding: 32px; color: #444; font-size: 0.75rem; border-top: 1px solid #1a1a1a; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Personal Brand OS</h1>
+    <p>by Daffa Novendra Aditama · AI Automation Engineer · AI Content Systems</p>
+  </div>
+  <div>
+    <div class="live-badge">LIVE DATA</div>
+    <div class="last-update" id="lastUpdate">Loading...</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value" id="statPosts">-</div><div class="stat-label">Total Posts Published</div></div>
+    <div class="stat-card"><div class="stat-value" id="statAvgScore">-</div><div class="stat-label">Avg Brand Voice Score</div></div>
+    <div class="stat-card"><div class="stat-value" id="statThisWeek">-</div><div class="stat-label">Posts This Week</div></div>
+    <div class="stat-card"><div class="stat-value" id="statTopScore">-</div><div class="stat-label">Highest Brand Score</div></div>
+    <div class="stat-card"><div class="stat-value" id="statPillars">-</div><div class="stat-label">Pillars Covered</div></div>
+    <div class="stat-card"><div class="stat-value" id="statGrade">-</div><div class="stat-label">Latest Week Grade</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      Recent Published Posts
+      <span id="postCount"></span>
+    </div>
+    <div id="postsContainer"><div class="empty">Loading posts...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Weekly Brand Reports</div>
+    <div id="reportsContainer"><div class="empty">Loading reports...</div></div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Personal Brand OS · Powered by Groq LLaMA 3.3 70B · Pipedream · Google Sheets</p>
+  <p style="margin-top:4px">Content generated daily at 06:30 AM WIB · Weekly report every Sunday 20:00 WIB</p>
+</footer>
+
+<script>
+var SHEETS_ID = 'GANTI_DENGAN_BRAND_OS_SHEETS_ID_KAMU';
+var API_KEY = 'GANTI_DENGAN_GOOGLE_API_KEY_KAMU';
+
+var postsData = [];
+var reportsData = [];
+
+function getWeekStart() {
+  var now = new Date();
+  var day = now.getDay();
+  var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  var monday = new Date(now.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
+function renderPosts() {
+  if (postsData.length === 0) {
+    document.getElementById('postsContainer').innerHTML = '<div class="empty">No posts yet. System runs daily at 06:30 AM WIB.</div>';
+    return;
+  }
+
+  document.getElementById('postCount').textContent = postsData.length + ' posts total';
+
+  var html = '';
+  var recent = postsData.slice(-10).reverse();
+
+  for (var i = 0; i < recent.length; i++) {
+    var p = recent[i];
+    var scoreWidth = p.score;
+
+    html += '<div class="post-card">';
+    html += '<div class="post-header">';
+    html += '<div class="post-theme">' + (p.theme || 'Untitled') + '</div>';
+    html += '<div class="post-score">Score: ' + p.score + '/100</div>';
+    html += '</div>';
+
+    if (p.pillar) {
+      html += '<span class="post-pillar">' + p.pillar + '</span>';
+    }
+
+    html += '<div class="score-bar"><div class="bar-bg"><div class="bar-fill" style="width:' + scoreWidth + '%"></div></div></div>';
+
+    if (p.twitter) {
+      html += '<div class="post-tweet">' + p.twitter.substring(0, 200) + '</div>';
+    }
+
+    if (p.image_url) {
+      html += '<img class="post-image" src="' + p.image_url + '" alt="Content visual" loading="lazy">';
+    }
+
+    html += '<div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">';
+    html += '<div>';
+    html += '<span class="platform-tag">Telegram</span>';
+    html += '<span class="platform-tag">Twitter Ready</span>';
+    html += '<span class="platform-tag">LinkedIn Ready</span>';
+    html += '</div>';
+    html += '<div class="post-date">' + p.date + '</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  document.getElementById('postsContainer').innerHTML = html;
+}
+
+function renderReports() {
+  if (reportsData.length === 0) {
+    document.getElementById('reportsContainer').innerHTML = '<div class="empty">No weekly reports yet. First report generates this Sunday at 20:00 WIB.</div>';
+    return;
+  }
+
+  var html = '';
+  var recent = reportsData.slice(-4).reverse();
+
+  for (var i = 0; i < recent.length; i++) {
+    var r = recent[i];
+    var momentum = r.momentum || 'STABLE';
+
+    html += '<div class="report-card">';
+    html += '<div class="report-left">';
+    html += '<div class="report-grade">' + (r.grade || 'B') + '</div>';
+    html += '<div class="report-meta">Week ending ' + r.date + '</div>';
+    html += '<div class="report-meta" style="margin-top:6px">Posts: ' + r.posts + '/7 &nbsp;|&nbsp; Avg Score: ' + r.avg_score + '/100</div>';
+    html += '<div class="momentum ' + momentum + '">' + momentum + '</div>';
+    html += '</div>';
+    html += '<div>';
+    html += '<div class="report-insight">' + (r.insight || '') + '</div>';
+    html += '<div class="report-focus">Next week: ' + (r.focus || '') + '</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  document.getElementById('reportsContainer').innerHTML = html;
+}
+
+function updateStats() {
+  var totalPosts = postsData.length;
+  var totalScore = 0;
+  var topScore = 0;
+  var pillarsSet = {};
+  var weekStart = getWeekStart();
+  var thisWeekCount = 0;
+
+  for (var i = 0; i < postsData.length; i++) {
+    var p = postsData[i];
+    totalScore += p.score;
+    if (p.score > topScore) topScore = p.score;
+    if (p.pillar) pillarsSet[p.pillar] = true;
+    if (p.date >= weekStart) thisWeekCount++;
+  }
+
+  var avgScore = totalPosts > 0 ? Math.round(totalScore / totalPosts) : 0;
+  var pillarsCount = Object.keys(pillarsSet).length;
+  var latestGrade = reportsData.length > 0 ? reportsData[reportsData.length - 1].grade : '-';
+
+  document.getElementById('statPosts').textContent = totalPosts;
+  document.getElementById('statAvgScore').textContent = avgScore;
+  document.getElementById('statThisWeek').textContent = thisWeekCount;
+  document.getElementById('statTopScore').textContent = topScore;
+  document.getElementById('statPillars').textContent = pillarsCount;
+  document.getElementById('statGrade').textContent = latestGrade;
+}
+
+async function loadData() {
+  try {
+    document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+
+    var postsUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_ID + '/values/published_posts!A:I?key=' + API_KEY;
+    var postsRes = await fetch(postsUrl);
+    var postsJson = await postsRes.json();
+    var postsRows = (postsJson.values || []).slice(1);
+
+    postsData = [];
+    for (var i = 0; i < postsRows.length; i++) {
+      var row = postsRows[i];
+      if (row[1]) {
+        postsData.push({
+          id: row[0] || '',
+          theme: row[1] || '',
+          date: row[2] || '',
+          pillar: row[3] || '',
+          twitter: row[4] || '',
+          image_url: row[5] || '',
+          score: parseInt(row[6] || 80),
+          platforms: row[7] || '',
+          reach: row[8] || ''
+        });
+      }
+    }
+
+    var reportsUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_ID + '/values/weekly_reports!A:H?key=' + API_KEY;
+    var reportsRes = await fetch(reportsUrl);
+    var reportsJson = await reportsRes.json();
+    var reportsRows = (reportsJson.values || []).slice(1);
+
+    reportsData = [];
+    for (var j = 0; j < reportsRows.length; j++) {
+      var rrow = reportsRows[j];
+      if (rrow[0]) {
+        reportsData.push({
+          date: rrow[0] || '',
+          posts: rrow[1] || 0,
+          avg_score: rrow[2] || 0,
+          grade: rrow[3] || 'B',
+          insight: rrow[4] || '',
+          focus: rrow[5] || '',
+          pillars: rrow[6] || '',
+          momentum: rrow[7] || 'STABLE'
+        });
+      }
+    }
+
+    updateStats();
+    renderPosts();
+    renderReports();
+
+  } catch (err) {
+    document.getElementById('postsContainer').innerHTML = '<div class="empty">Error loading data: ' + err.message + '</div>';
+    console.log('Error:', err);
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
