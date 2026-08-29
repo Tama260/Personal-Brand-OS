@@ -28,7 +28,12 @@ body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #f0f0f0; 
 .post-pillar { background: #1a2a1a; color: #86efac; padding: 3px 10px; border-radius: 10px; font-size: 0.7rem; border: 1px solid #3B6D11; margin-bottom: 8px; display: inline-block; }
 .post-tweet { background: #0a0a1a; border-left: 3px solid #7c3aed; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 0.85rem; color: #ccc; line-height: 1.5; margin-bottom: 8px; }
 .post-date { color: #555; font-size: 0.72rem; }
-.post-image { width: 100%; max-width: 300px; border-radius: 8px; margin-top: 10px; }
+.post-image { width: 100%; max-width: 300px; border-radius: 8px; margin-top: 10px; display: block; background: #0a0a0a; min-height: 160px; object-fit: cover; }
+.post-image-wrap { max-width: 300px; margin-top: 10px; }
+.image-fallback { width: 100%; max-width: 300px; min-height: 160px; border-radius: 8px; background: #0a0a0a; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; color: #555; font-size: 0.72rem; text-align: center; padding: 14px; margin-top: 10px; }
+.image-fallback .icon { font-size: 1.3rem; }
+.image-skeleton { width: 100%; max-width: 300px; min-height: 160px; border-radius: 8px; margin-top: 10px; background: linear-gradient(90deg, #0a0a0a 25%, #171717 37%, #0a0a0a 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
+@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 .score-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
 .bar-bg { background: #2a2a2a; border-radius: 4px; height: 6px; flex: 1; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 4px; background: #7c3aed; }
@@ -87,7 +92,7 @@ footer { text-align: center; padding: 32px; color: #444; font-size: 0.75rem; bor
 </div>
 
 <footer>
-  <p>Personal Brand OS · Powered by Groq LLaMA 3.3 70B · Pipedream · Google Sheets</p>
+  <p>Personal Brand OS · Powered by Groq openai/gpt-oss-120b · Pipedream · Google Sheets</p>
   <p style="margin-top:4px">Content generated daily at 06:30 AM WIB · Weekly report every Sunday 20:00 WIB</p>
 </footer>
 
@@ -104,6 +109,24 @@ function getWeekStart() {
   var diff = now.getDate() - day + (day === 0 ? -6 : 1);
   var monday = new Date(now.setDate(diff));
   return monday.toISOString().split('T')[0];
+}
+
+// Builds the image element markup with a loading skeleton and a graceful
+// fallback if the generated image URL is missing, still rendering, or fails.
+function buildImageMarkup(imageUrl, theme) {
+  if (!imageUrl) {
+    return '<div class="image-fallback"><div class="icon">🖼️</div><div>No image generated for this post</div></div>';
+  }
+  var safeAlt = (theme || 'Content visual').replace(/"/g, '&quot;');
+  var uid = 'img_' + Math.random().toString(36).slice(2, 10);
+  return (
+    '<div class="post-image-wrap">' +
+      '<div class="image-skeleton" id="skeleton_' + uid + '"></div>' +
+      '<img id="' + uid + '" class="post-image" style="display:none" src="' + imageUrl + '" alt="' + safeAlt + '" loading="lazy" referrerpolicy="no-referrer" ' +
+        'onload="document.getElementById(\'skeleton_' + uid + '\').style.display=\'none\'; this.style.display=\'block\';" ' +
+        'onerror="document.getElementById(\'skeleton_' + uid + '\').outerHTML=\'<div class=&quot;image-fallback&quot;><div class=&quot;icon&quot;>&#9888;&#65039;</div><div>Image failed to load (source may still be generating or is unreachable)</div></div>\'; this.remove();">' +
+    '</div>'
+  );
 }
 
 function renderPosts() {
@@ -137,9 +160,7 @@ function renderPosts() {
       html += '<div class="post-tweet">' + p.twitter.substring(0, 200) + '</div>';
     }
 
-    if (p.image_url) {
-      html += '<img class="post-image" src="' + p.image_url + '" alt="Content visual" loading="lazy">';
-    }
+    html += buildImageMarkup(p.image_url, p.theme);
 
     html += '<div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">';
     html += '<div>';
