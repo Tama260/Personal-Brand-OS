@@ -23,7 +23,7 @@ Every day at 06:30 AM WIB, this pipeline runs automatically:
 ↓
 [load_brand_profile] — loads profile, voice rules, recent topics
 ↓
-[generate_brand_content] — Groq AI creates daily content package
+[generate_brand_content] — Groq `openai/gpt-oss-120b` creates daily content package
 ↓
 [brand_voice_qa] — AI evaluates brand consistency score 0-100
 ↓
@@ -76,19 +76,30 @@ Every Sunday at 20:00 WIB, the system generates:
 
 ---
 
+## Dashboard Features
+
+- **Recent Published Posts feed** — latest 10 posts with theme, pillar tag, brand score, and tweet preview
+- **Resilient image loading** — post visuals now show a loading skeleton while the image loads, and fall back to a clear "image unavailable" placeholder if the Pollinations.ai URL is slow, still generating, or unreachable, instead of the small broken-image icon it used to show
+- **Weekly Brand Reports** — grade, momentum trend, insight, and next-week focus for the last 4 weeks
+- **Auto-refresh** every 5 minutes
+
+---
+
 ## Tech Stack
 
 | Category | Tools |
 |---|---|
 | Workflow Automation | Pipedream |
-| AI Content Generation | Groq AI (LLaMA 3.3 70B) |
-| Brand Voice QA | Groq AI (LLaMA 3.3 70B) |
+| AI Content Generation | Groq AI (`openai/gpt-oss-120b`) |
+| Brand Voice QA | Groq AI (`openai/gpt-oss-120b`) |
 | Image Generation | Pollinations.ai |
 | Database | Google Sheets API |
 | Publishing | Telegram Bot API |
 | Auth | Google Service Account, JWT |
 
 **Cost: $0/month** — 100% free tier infrastructure
+
+> **Model update:** Groq deprecated `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` on the free/developer tier. Both content generation and the brand voice QA layer now run on **`openai/gpt-oss-120b`** — Groq's officially recommended replacement, still fully free-tier, and it benchmarks above the old Llama 3.3 70B on reasoning and instruction-following while running faster on Groq's LPU hardware. If you ever need lighter rate limits, `openai/gpt-oss-20b` or `qwen/qwen3.6-27b` are the other free options Groq points to, but 120B is the strongest of the three and stays the default here.
 
 ---
 
@@ -160,6 +171,7 @@ What no-code tools are you using in your workflow?
 ## Environment Variables
 
 GROQ_API_KEY                = gsk_xxxx
+GROQ_MODEL                  = openai/gpt-oss-120b
 TELEGRAM_BOT_TOKEN          = xxxx:xxxx
 TELEGRAM_CHAT_ID            = -100xxxxxxx
 BRAND_OS_SHEETS_ID          = spreadsheet_id
@@ -179,6 +191,14 @@ PersonalBrand-OS spreadsheet:
 
 ---
 
+## Known maintenance items to check periodically
+
+- **Groq model deprecations**: Groq occasionally sunsets free-tier models with an email notice. Check `console.groq.com/docs/deprecations` every few months and re-point `GROQ_MODEL` (used in both `generate_brand_content` and `brand_voice_qa`) if `openai/gpt-oss-120b` is ever retired.
+- **Pollinations.ai image generation**: image URLs are generated on request and can occasionally time out or 404. The dashboard now degrades gracefully (skeleton → fallback placeholder) if an image fails, but if failures become frequent, consider adding a retry/backoff step in `generate_brand_content` before the URL is written to `published_posts`.
+- **Brand voice threshold drift**: if `brand_voice_qa` starts auto-approving content that reads off-brand, double-check the `always_do` / `never_do` rules in `brand_voice_rules` are still current — the QA layer only enforces what's in that sheet.
+
+---
+
 ## Author
 
 **Daffa Novendra Aditama**
@@ -189,4 +209,4 @@ AI Automation Engineer | Banten, Indonesia
 
 ---
 
-*Built with Groq AI · Pipedream · Pollinations.ai · Google Sheets*
+*Built with Groq AI (openai/gpt-oss-120b) · Pipedream · Pollinations.ai · Google Sheets*
