@@ -2,6 +2,8 @@
 
 > Autonomous AI system that manages, generates, and optimizes personal brand content daily — with brand voice consistency scoring, multi-platform publishing, and weekly strategic reports — running 24/7 with zero manual intervention.
 
+**Live Dashboard:** [personal-bos.netlify.app](https://personal-bos.netlify.app/)
+
 ---
 
 ## What This System Does
